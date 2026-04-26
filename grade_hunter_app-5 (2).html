@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🔥 تطبيق محفّز المعدل</title>
+<style>
+body{
+font-family:Arial,sans-serif;
+margin:0;
+background:linear-gradient(135deg,#4f46e5,#9333ea);
+color:#fff;
+}
+.app{
+max-width:900px;
+margin:auto;
+padding:20px;
+}
+.header{
+text-align:center;
+padding:20px;
+}
+.icon{
+width:80px;
+height:80px;
+border-radius:20px;
+background:#fff;
+color:#4f46e5;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:40px;
+margin:auto;
+}
+.card{
+background:#ffffff15;
+backdrop-filter:blur(10px);
+padding:14px;
+border-radius:16px;
+margin:10px 0;
+}
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+gap:12px;
+}
+button{
+padding:10px 12px;
+border:none;
+border-radius:12px;
+cursor:pointer;
+font-weight:bold;
+}
+.add{
+background:#22c55e;
+color:#fff;
+}
+.reset{
+background:#ef4444;
+color:#fff;
+width:100%;
+margin-top:10px;
+}
+.barbg{
+height:18px;
+background:#ffffff30;
+border-radius:999px;
+overflow:hidden;
+}
+.bar{
+height:100%;
+width:0%;
+background:#22c55e;
+}
+.big{
+font-size:22px;
+font-weight:bold;
+margin:6px 0;
+}
+.small{
+font-size:13px;
+opacity:.8;
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="header">
+<div class="icon">📚</div>
+<h1>محفّز المعدل</h1>
+<p>هيلايتي… هذا مو تطبيق، هذا مدرّبج الشخصي 😏🔥</p>
+</div>
+
+<div class="card">
+<div class="barbg"><div class="bar" id="bar"></div></div>
+<div class="big" id="pct">0%</div>
+<div class="big" id="grade">المعدل: 0</div>
+</div>
+
+<div class="grid" id="subjects"></div>
+
+<button class="reset" onclick="resetAll()">🔄 تصفير الكل</button>
+
+</div>
+
+<script>
+const data=[
+{name:"التربية الإسلامية",total:4},
+{name:"اللغة العربية",total:9},
+{name:"الإنكليزي",total:6},
+{name:"الأحياء",total:4},
+{name:"الرياضيات",total:5},
+{name:"الكيمياء",total:7}
+];
+
+let state=JSON.parse(localStorage.getItem('state')||'{}');
+
+function init(){
+let html='';
+data.forEach((s,i)=>{
+if(!state[i]) state[i]=0;
+html+=`<div class='card'>
+<div class='big'>${s.name}</div>
+<div>المكتمل: ${state[i]}/${s.total}</div>
+<button class='add' onclick='add(${i})'>+ وحدة</button>
+</div>`;
+});
+document.getElementById('subjects').innerHTML=html;
+calc();
+}
+
+function add(i){
+if(state[i]<data[i].total){state[i]++;save();calc();init();}
+}
+
+function calc(){
+let done=0,total=0;
+data.forEach((s,i)=>{done+=state[i];total+=s.total;});
+let pct=(done/total)*100;
+let grade=(pct/100)*98;
+document.getElementById('pct').innerText=pct.toFixed(1)+'%';
+document.getElementById('grade').innerText='المعدل: '+grade.toFixed(1);
+document.getElementById('bar').style.width=pct+'%';
+}
+
+function save(){localStorage.setItem('state',JSON.stringify(state));}
+function resetAll(){localStorage.removeItem('state');state={};init();}
+
+init();
+</script>
+</body>
+</html>
