@@ -2,9 +2,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>🎮 لعبة المعدل 100</title>
+<title>🎮 لعبة المعدل 100 PRO</title>
 <style>
-body{font-family:Arial,sans-serif;margin:0;background:linear-gradient(135deg,#111827,#4f46e5,#9333ea);color:#fff}
+body{font-family:Arial,sans-serif;margin:0;background:linear-gradient(135deg,#0f172a,#4f46e5,#9333ea);color:#fff}
 .app{max-width:900px;margin:auto;padding:20px}
 .header{text-align:center;padding:20px}
 .icon{width:90px;height:90px;border-radius:22px;background:#fff;color:#4f46e5;display:flex;align-items:center;justify-content:center;font-size:44px;margin:auto}
@@ -17,32 +17,36 @@ button{padding:10px 12px;border:none;border-radius:12px;cursor:pointer;font-weig
 .bar{height:100%;width:0%;background:#22c55e}
 .big{font-size:22px;font-weight:bold;margin:6px 0}
 .small{font-size:13px;opacity:.85}
-.badge{display:inline-block;background:#f59e0b;color:#000;padding:4px 10px;border-radius:999px;font-size:12px;margin:4px 4px 0 0}
+.badge{display:inline-block;background:#f59e0b;color:#000;padding:4px 10px;border-radius:999px;font-size:12px;margin:4px}
 input{padding:8px;border-radius:10px;border:none;width:120px}
 .msg{font-size:14px;margin-top:6px;opacity:.9}
+.streak{font-size:14px;margin-top:6px}
 </style>
 </head>
 <body>
 <div class="app"><div class="header">
 <div class="icon">🎮</div>
-<h1>لعبة المعدل 100</h1>
-<p>هيلايتي 😏 إنتِ مو طالبة… إنتِ لاعبة مستوى صعب</p>
-<div class="card">
-<div class="big">👤 ملف المستخدم</div>
-<div id="xp">XP: 0</div>
-<div id="ach">🏆 الجوائز: لا يوجد</div>
-</div>
+<h1>لعبة المعدل 100 PRO</h1>
+<p>هيلايتي 😏 لعبة تتحكم بمستقبلك</p>
 <div class="badge" id="level">المستوى: 1</div>
 </div><div class="card">
-<div class="big">🎯 اختاري الهدف</div>
-<input id="target" type="number" min="0" max="100" value="100" onchange="saveTarget();calc()">
+<div class="big">🔥 المهمة اليومية</div>
+<div id="dailyTask">اكملين 3 وحدات اليوم 😏</div>
+<div class="streak" id="streak">الاستمرارية: 0 يوم 🔥</div>
+</div><div class="card">
+<div class="big">🎯 الهدف</div>
+<input id="target" type="number" value="100" onchange="saveTarget();calc()">
 </div><div class="card">
 <div class="big" id="days">⏳ الأيام المتبقية: 48</div>
-<div class="msg" id="msg">ابدئي اللعب… النجاح ينتظرج 😌</div>
+<div class="msg" id="msg">ابدئي… اللعبة بيدج 😌</div>
 </div><div class="card">
 <div class="barbg"><div class="bar" id="bar"></div></div>
 <div class="big" id="pct">0%</div>
 <div class="big" id="grade">المعدل: 0</div>
+</div><div class="card">
+<div class="big">👤 ملف الإنجاز</div>
+<div id="xp">XP: 0</div>
+<div id="ach"></div>
 </div><div class="grid" id="subjects"></div><button class="reset" onclick="resetAll()">🔄 إعادة اللعبة</button>
 
 </div><script>
@@ -57,23 +61,52 @@ const data=[
 ];
 
 const messages=[
-"🔥 لا توقفين هسه",
-"😏 المعدل ينتظرج",
-"📚 كل XP يقربج",
+"😏 لا توقفين",
+"🔥 المعدل ينتظرج",
+"📚 كل وحدة تقربج",
 "💪 إنتِ قوية",
-"🎮 لعبه حقيقية"
+"🎮 كملّي الجولة"
 ];
 
 let state=JSON.parse(localStorage.getItem('state')||'{}');
 let enabled=JSON.parse(localStorage.getItem('enabled')||'{}');
-let achievements=JSON.parse(localStorage.getItem('ach')||'[]');
-let startDate=localStorage.getItem('startDate');
-let target=parseInt(localStorage.getItem('target')||"100");
+let ach=JSON.parse(localStorage.getItem('ach')||'[]');
+let xp=parseInt(localStorage.getItem('xp')||0);
+let streak=parseInt(localStorage.getItem('streak')||0);
+let lastDay=localStorage.getItem('lastDay');
+let lastActive=parseInt(localStorage.getItem('lastActive')||Date.now());
+let startDate=localStorage.getItem('startDate')||Date.now();
+let target=parseInt(localStorage.getItem('target')||100);
 
-if(!startDate){startDate=Date.now();localStorage.setItem('startDate',startDate);}
+function today(){return new Date().toDateString();}
 
-function saveTarget(){
-localStorage.setItem('target',document.getElementById('target').value);
+// streak
+if(lastDay!==today()){
+if(lastDay) streak++;
+localStorage.setItem('lastDay',today());
+localStorage.setItem('streak',streak);
+}
+
+// XP decay بعد 4 أيام غياب
+function checkInactive(){
+let diffDays=Math.floor((Date.now()-lastActive)/(1000*60*60*24));
+if(diffDays>=4 && xp>0){
+xp=Math.max(0,xp-5);
+localStorage.setItem('xp',xp);
+}
+localStorage.setItem('lastActive',Date.now());
+}
+
+function saveTarget(){localStorage.setItem('target',document.getElementById('target').value);}
+
+function addXP(v){xp+=v;localStorage.setItem('xp',xp);checkAch();}
+
+function checkAch(){
+let rewards=["🏅 مبتدئة","🎖 مجتهدة","🏆 قوية","👑 أسطورة"];
+rewards.forEach((r,i)=>{
+if(xp>=(i+1)*10 && !ach.includes(r)) ach.push(r);
+});
+localStorage.setItem('ach',JSON.stringify(ach));
 }
 
 function calcDays(){
@@ -83,64 +116,32 @@ let left=Math.max(total-passed,0);
 document.getElementById('days').innerText='⏳ الأيام المتبقية: '+left;
 }
 
-function randomMsg(){
+function msg(){
 document.getElementById('msg').innerText=messages[Math.floor(Math.random()*messages.length)];
 }
 
-function getXP(){
-let xp=0;
-Object.values(state).forEach(v=>xp+=v);
-return xp;
-}
-
-function checkAchievements(xp){
-let rewards=["🏅 مبتدئة مجتهدة","🎖 نصف الطريق","🏆 مقاتلة سادس","👑 أسطورة دراسة"];
-
-rewards.forEach((r,i)=>{
-if(xp>= (i+1)*10 && !achievements.includes(r)){
-achievements.push(r);
-}
-});
-
-localStorage.setItem('ach',JSON.stringify(achievements));
-}
-
-function updateProfile(xp){
-document.getElementById('xp').innerText='XP: '+xp;
-
-document.getElementById('ach').innerHTML=
-achievements.length?achievements.map(a=>`<span class='badge'>${a}</span>`).join(''):'لا يوجد';
-}
-
-function calcLevel(pct){
-if(pct<20) return "1";
-if(pct<40) return "2";
-if(pct<60) return "3";
-if(pct<80) return "4";
-if(pct<95) return "5";
-return "6 🔥";
-}
-
 function init(){
+checkInactive();
 document.getElementById('target').value=target;
+
 let html='';
 data.forEach((s,i)=>{
 if(enabled[i]===undefined) enabled[i]=true;
 if(!state[i]) state[i]=0;
 html+=`<div class='card'>
 <div class='big'>${s.name}</div>
-<div>📊 ${state[i]}/${s.total}</div>
+<div>${state[i]}/${s.total}</div>
 <button class='add' onclick='add(${i})'>+ XP</button>
-<div><label><input type='checkbox' onchange='toggle(${i})' ${enabled[i]?'checked':''}> مفعّلة</label></div>
+<label><input type='checkbox' onchange='toggle(${i})' ${enabled[i]?'checked':''}> مفعلة</label>
 </div>`;
 });
 document.getElementById('subjects').innerHTML=html;
-calc();calcDays();randomMsg();
+calc();
 }
 
 function add(i){
 if(!enabled[i]) return;
-if(state[i]<data[i].total){state[i]++;save();calc();init();}
+if(state[i]<data[i].total){state[i]++;addXP(1);save();calc();init();}
 }
 
 function toggle(i){enabled[i]=!enabled[i];save();calc();init();}
@@ -148,31 +149,22 @@ function toggle(i){enabled[i]=!enabled[i];save();calc();init();}
 function calc(){
 let done=0,total=0;
 data.forEach((s,i)=>{if(enabled[i]){done+=state[i];total+=s.total;}});
-
-let pct=total? (done/total)*100:0;
-let target=parseInt(document.getElementById('target').value)||100;
+let pct=total?(done/total)*100:0;
 let grade=(pct/100)*target;
+let lvl=pct<20?1:pct<40?2:pct<60?3:pct<80?4:pct<95?5:6:6;
 
-let xp=getXP();
-checkAchievements(xp);
-updateProfile(xp);
-
-let lvl=calcLevel(pct);
 document.getElementById('level').innerText='المستوى: '+lvl;
-
+document.getElementById('xp').innerText='XP: '+xp;
+document.getElementById('ach').innerHTML=ach.map(a=>`<span class='badge'>${a}</span>`).join('');
 document.getElementById('pct').innerText=pct.toFixed(1)+'%';
-document.getElementById('grade').innerText='المعدل: '+grade.toFixed(1)+' / '+target;
+document.getElementById('grade').innerText='المعدل: '+grade.toFixed(1);
 document.getElementById('bar').style.width=pct+'%';
-}
-
-function save(){
-localStorage.setItem('state',JSON.stringify(state));
-localStorage.setItem('enabled',JSON.stringify(enabled));
+document.getElementById('streak').innerText='الاستمرارية: '+streak+' يوم 🔥';
 }
 
 function resetAll(){localStorage.clear();location.reload();}
 
-setInterval(()=>{randomMsg();calcDays();},8000);
+setInterval(()=>{msg();calcDays();},7000);
 init();
 </script></body>
 </html>
