@@ -2,12 +2,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>🔥 تطبيق محفّز المعدل 100</title>
+<title>🎮 لعبة المعدل 100</title>
 <style>
-body{font-family:Arial,sans-serif;margin:0;background:linear-gradient(135deg,#4f46e5,#9333ea);color:#fff}
+body{font-family:Arial,sans-serif;margin:0;background:linear-gradient(135deg,#111827,#4f46e5,#9333ea);color:#fff}
 .app{max-width:900px;margin:auto;padding:20px}
 .header{text-align:center;padding:20px}
-.icon{width:80px;height:80px;border-radius:20px;background:#fff;color:#4f46e5;display:flex;align-items:center;justify-content:center;font-size:40px;margin:auto}
+.icon{width:90px;height:90px;border-radius:22px;background:#fff;color:#4f46e5;display:flex;align-items:center;justify-content:center;font-size:44px;margin:auto}
 .card{background:#ffffff15;backdrop-filter:blur(10px);padding:14px;border-radius:16px;margin:10px 0}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
 button{padding:10px 12px;border:none;border-radius:12px;cursor:pointer;font-weight:bold}
@@ -16,23 +16,30 @@ button{padding:10px 12px;border:none;border-radius:12px;cursor:pointer;font-weig
 .barbg{height:18px;background:#ffffff30;border-radius:999px;overflow:hidden}
 .bar{height:100%;width:0%;background:#22c55e}
 .big{font-size:22px;font-weight:bold;margin:6px 0}
-.small{font-size:13px;opacity:.8}
+.small{font-size:13px;opacity:.85}
+.badge{display:inline-block;background:#f59e0b;color:#000;padding:4px 10px;border-radius:999px;font-size:12px;margin-top:6px}
+input{padding:8px;border-radius:10px;border:none;width:120px}
 .msg{font-size:14px;margin-top:6px;opacity:.9}
 </style>
 </head>
 <body>
 <div class="app"><div class="header">
-<div class="icon">📚</div>
-<h1>محفّز المعدل 100</h1>
-<p>هيلايتي 😏 إنتِ تتحكمين باللعبة</p>
+<div class="icon">🎮</div>
+<h1>لعبة المعدل 100</h1>
+<p>هيلايتي 😏 إنتِ مو طالبة… إنتِ لاعبة مستوى صعب</p>
+<div class="badge" id="level">المستوى: 1 (طالبة مبتدئة)</div>
 </div><div class="card">
-<div class="big" id="days">الأيام المتبقية: 48</div>
-<div class="msg" id="msg">ابدئي اليوم ولا تخلين الكسل يضحك عليج 😌</div>
+<div class="big">🎯 اختاري الهدف</div>
+<input id="target" type="number" min="0" max="100" value="100" onchange="calc()">
+<div class="small" id="needed"></div>
+</div><div class="card">
+<div class="big" id="days">⏳ الأيام المتبقية: 48</div>
+<div class="msg" id="msg">ابدئي اللعب… النجاح ينتظرج 😌</div>
 </div><div class="card">
 <div class="barbg"><div class="bar" id="bar"></div></div>
 <div class="big" id="pct">0%</div>
 <div class="big" id="grade">المعدل: 0</div>
-</div><div class="grid" id="subjects"></div><button class="reset" onclick="resetAll()">🔄 تصفير الكل</button>
+</div><div class="grid" id="subjects"></div><button class="reset" onclick="resetAll()">🔄 إعادة اللعبة</button>
 
 </div><script>
 const data=[
@@ -46,11 +53,11 @@ const data=[
 ];
 
 const messages=[
-"لا تأجلين… 98 ما يحب الانتظار 😏",
-"هيلة ركزي… إنتِ أقوى من التسويف 🔥",
-"كل وحدة تقربينج من القمة 📚",
-"الراحة بعد النجاح مو قبله 😌",
-"اليوم خطوة… باچر حلم 💪"
+"🔥 لا تخسرين أول جولة",
+"😏 المعدل يخاف منج",
+"📚 كل وحدة = XP جديد",
+"💪 إنتِ أقوى من التسويف",
+"🎮 مستوى جديد ينتظرج"
 ];
 
 let state=JSON.parse(localStorage.getItem('state')||'{}');
@@ -62,12 +69,21 @@ function calcDays(){
 let total=48;
 let passed=Math.floor((Date.now()-startDate)/(1000*60*60*24));
 let left=Math.max(total-passed,0);
-document.getElementById('days').innerText='الأيام المتبقية: '+left;
+document.getElementById('days').innerText='⏳ الأيام المتبقية: '+left;
 }
 
 function randomMsg(){
 let m=messages[Math.floor(Math.random()*messages.length)];
 document.getElementById('msg').innerText=m;
+}
+
+function calcLevel(pct){
+if(pct<20) return "1 (طالبة مبتدئة)";
+if(pct<40) return "2 (مقاتلة البداية)";
+if(pct<60) return "3 (نص الطريق)";
+if(pct<80) return "4 (قريبة من القمة)";
+if(pct<95) return "5 (أسطورة سادس)";
+return "6 (🔥 ملكة 100)";
 }
 
 function init(){
@@ -77,8 +93,8 @@ if(enabled[i]===undefined) enabled[i]=true;
 if(!state[i]) state[i]=0;
 html+=`<div class='card'>
 <div class='big'>${s.name}</div>
-<div>المكتمل: ${state[i]}/${s.total}</div>
-<button class='add' onclick='add(${i})'>+ وحدة</button>
+<div>📊 ${state[i]}/${s.total}</div>
+<button class='add' onclick='add(${i})'>+ XP</button>
 <div><label><input type='checkbox' onchange='toggle(${i})' ${enabled[i]?'checked':''}> مفعّلة</label></div>
 </div>`;
 });
@@ -98,11 +114,27 @@ let done=0,total=0;
 data.forEach((s,i)=>{
 if(enabled[i]){done+=state[i];total+=s.total;}
 });
+
 let pct=total==0?0:(done/total)*100;
-let grade=pct;
+let target=parseInt(document.getElementById('target').value)||100;
+let grade=(pct/100)*target;
+
+let required=Math.ceil((target/100)*total);
+let remaining=Math.max(required-done,0);
+let enabledCount=data.filter((_,i)=>enabled[i]).length;
+let per= Math.ceil(remaining/(enabledCount||1));
+
+// level
+let lvl=calcLevel(pct);
+document.getElementById('level').innerText="المستوى: " + lvl;
+
 document.getElementById('pct').innerText=pct.toFixed(1)+'%';
-document.getElementById('grade').innerText='المعدل: '+grade.toFixed(1);
+document.getElementById('grade').innerText='المعدل: '+grade.toFixed(1)+' / '+target;
 document.getElementById('bar').style.width=pct+'%';
+document.getElementById('needed').innerText=
+remaining>0?
+"🔥 تحتاجين " + remaining + " XP تقريباً (≈ " + per + " لكل مادة)":
+"🏆 فزتي بالجولة تقريباً";
 }
 
 function save(){
@@ -113,7 +145,7 @@ localStorage.setItem('enabled',JSON.stringify(enabled));
 function resetAll(){
 localStorage.clear();location.reload();}
 
-setInterval(()=>{randomMsg();calcDays();},10000);
+setInterval(()=>{randomMsg();calcDays();},8000);
 init();
 </script></body>
 </html>
