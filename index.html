@@ -1,153 +1,119 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<!DOCTYPE html><html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>🔥 تطبيق محفّز المعدل</title>
+<title>🔥 تطبيق محفّز المعدل 100</title>
 <style>
-body{
-font-family:Arial,sans-serif;
-margin:0;
-background:linear-gradient(135deg,#4f46e5,#9333ea);
-color:#fff;
-}
-.app{
-max-width:900px;
-margin:auto;
-padding:20px;
-}
-.header{
-text-align:center;
-padding:20px;
-}
-.icon{
-width:80px;
-height:80px;
-border-radius:20px;
-background:#fff;
-color:#4f46e5;
-display:flex;
-align-items:center;
-justify-content:center;
-font-size:40px;
-margin:auto;
-}
-.card{
-background:#ffffff15;
-backdrop-filter:blur(10px);
-padding:14px;
-border-radius:16px;
-margin:10px 0;
-}
-.grid{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
-gap:12px;
-}
-button{
-padding:10px 12px;
-border:none;
-border-radius:12px;
-cursor:pointer;
-font-weight:bold;
-}
-.add{
-background:#22c55e;
-color:#fff;
-}
-.reset{
-background:#ef4444;
-color:#fff;
-width:100%;
-margin-top:10px;
-}
-.barbg{
-height:18px;
-background:#ffffff30;
-border-radius:999px;
-overflow:hidden;
-}
-.bar{
-height:100%;
-width:0%;
-background:#22c55e;
-}
-.big{
-font-size:22px;
-font-weight:bold;
-margin:6px 0;
-}
-.small{
-font-size:13px;
-opacity:.8;
-}
+body{font-family:Arial,sans-serif;margin:0;background:linear-gradient(135deg,#4f46e5,#9333ea);color:#fff}
+.app{max-width:900px;margin:auto;padding:20px}
+.header{text-align:center;padding:20px}
+.icon{width:80px;height:80px;border-radius:20px;background:#fff;color:#4f46e5;display:flex;align-items:center;justify-content:center;font-size:40px;margin:auto}
+.card{background:#ffffff15;backdrop-filter:blur(10px);padding:14px;border-radius:16px;margin:10px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+button{padding:10px 12px;border:none;border-radius:12px;cursor:pointer;font-weight:bold}
+.add{background:#22c55e;color:#fff}
+.reset{background:#ef4444;color:#fff;width:100%;margin-top:10px}
+.barbg{height:18px;background:#ffffff30;border-radius:999px;overflow:hidden}
+.bar{height:100%;width:0%;background:#22c55e}
+.big{font-size:22px;font-weight:bold;margin:6px 0}
+.small{font-size:13px;opacity:.8}
+.msg{font-size:14px;margin-top:6px;opacity:.9}
 </style>
 </head>
 <body>
-<div class="app">
-
-<div class="header">
+<div class="app"><div class="header">
 <div class="icon">📚</div>
-<h1>محفّز المعدل</h1>
-<p>هيلايتي… هذا مو تطبيق، هذا مدرّبج الشخصي 😏🔥</p>
-</div>
-
-<div class="card">
+<h1>محفّز المعدل 100</h1>
+<p>هيلايتي 😏 إنتِ تتحكمين باللعبة</p>
+</div><div class="card">
+<div class="big" id="days">الأيام المتبقية: 48</div>
+<div class="msg" id="msg">ابدئي اليوم ولا تخلين الكسل يضحك عليج 😌</div>
+</div><div class="card">
 <div class="barbg"><div class="bar" id="bar"></div></div>
 <div class="big" id="pct">0%</div>
 <div class="big" id="grade">المعدل: 0</div>
-</div>
+</div><div class="grid" id="subjects"></div><button class="reset" onclick="resetAll()">🔄 تصفير الكل</button>
 
-<div class="grid" id="subjects"></div>
-
-<button class="reset" onclick="resetAll()">🔄 تصفير الكل</button>
-
-</div>
-
-<script>
+</div><script>
 const data=[
-{name:"التربية الإسلامية",total:4},
-{name:"اللغة العربية",total:9},
-{name:"الإنكليزي",total:6},
-{name:"الأحياء",total:4},
-{name:"الرياضيات",total:5},
-{name:"الكيمياء",total:7}
+{name:"التربية الإسلامية",total:4,enabled:true},
+{name:"اللغة العربية",total:9,enabled:true},
+{name:"الإنكليزي",total:6,enabled:true},
+{name:"الأحياء",total:4,enabled:true},
+{name:"الرياضيات",total:5,enabled:true},
+{name:"الكيمياء",total:7,enabled:true},
+{name:"الفيزياء",total:9,enabled:true}
+];
+
+const messages=[
+"لا تأجلين… 98 ما يحب الانتظار 😏",
+"هيلة ركزي… إنتِ أقوى من التسويف 🔥",
+"كل وحدة تقربينج من القمة 📚",
+"الراحة بعد النجاح مو قبله 😌",
+"اليوم خطوة… باچر حلم 💪"
 ];
 
 let state=JSON.parse(localStorage.getItem('state')||'{}');
+let enabled=JSON.parse(localStorage.getItem('enabled')||'{}');
+let startDate=localStorage.getItem('startDate');
+if(!startDate){startDate=Date.now();localStorage.setItem('startDate',startDate);}
+
+function calcDays(){
+let total=48;
+let passed=Math.floor((Date.now()-startDate)/(1000*60*60*24));
+let left=Math.max(total-passed,0);
+document.getElementById('days').innerText='الأيام المتبقية: '+left;
+}
+
+function randomMsg(){
+let m=messages[Math.floor(Math.random()*messages.length)];
+document.getElementById('msg').innerText=m;
+}
 
 function init(){
 let html='';
 data.forEach((s,i)=>{
+if(enabled[i]===undefined) enabled[i]=true;
 if(!state[i]) state[i]=0;
 html+=`<div class='card'>
 <div class='big'>${s.name}</div>
 <div>المكتمل: ${state[i]}/${s.total}</div>
 <button class='add' onclick='add(${i})'>+ وحدة</button>
+<div><label><input type='checkbox' onchange='toggle(${i})' ${enabled[i]?'checked':''}> مفعّلة</label></div>
 </div>`;
 });
 document.getElementById('subjects').innerHTML=html;
-calc();
+calc();calcDays();randomMsg();
 }
 
 function add(i){
+if(!enabled[i]) return;
 if(state[i]<data[i].total){state[i]++;save();calc();init();}
 }
 
+function toggle(i){enabled[i]=!enabled[i];save();calc();init();}
+
 function calc(){
 let done=0,total=0;
-data.forEach((s,i)=>{done+=state[i];total+=s.total;});
-let pct=(done/total)*100;
-let grade=(pct/100)*98;
+data.forEach((s,i)=>{
+if(enabled[i]){done+=state[i];total+=s.total;}
+});
+let pct=total==0?0:(done/total)*100;
+let grade=pct;
 document.getElementById('pct').innerText=pct.toFixed(1)+'%';
 document.getElementById('grade').innerText='المعدل: '+grade.toFixed(1);
 document.getElementById('bar').style.width=pct+'%';
 }
 
-function save(){localStorage.setItem('state',JSON.stringify(state));}
-function resetAll(){localStorage.removeItem('state');state={};init();}
+function save(){
+localStorage.setItem('state',JSON.stringify(state));
+localStorage.setItem('enabled',JSON.stringify(enabled));
+}
 
+function resetAll(){
+localStorage.clear();location.reload();}
+
+setInterval(()=>{randomMsg();calcDays();},10000);
 init();
-</script>
-</body>
+</script></body>
 </html>
