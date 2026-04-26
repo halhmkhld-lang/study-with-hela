@@ -20,114 +20,87 @@ button{padding:10px 12px;border:none;border-radius:12px;cursor:pointer;font-weig
 .badge{display:inline-block;background:#f59e0b;color:#000;padding:4px 10px;border-radius:999px;font-size:12px;margin:4px}
 input{padding:8px;border-radius:10px;border:none;width:120px}
 .msg{font-size:14px;margin-top:6px;opacity:.9}
-.streak{font-size:14px;margin-top:6px}
 </style>
 </head>
 <body>
 <div class="app"><div class="header">
 <div class="icon">🎮</div>
 <h1>لعبة المعدل 100 PRO</h1>
-<p>هيلايتي 😏 لعبة تتحكم بمستقبلك</p>
-<div class="badge" id="level">المستوى: 1</div>
-</div><div class="card">
-<div class="big">🔥 المهمة اليومية</div>
-<div id="dailyTask">اكملين 3 وحدات اليوم 😏</div>
-<div class="streak" id="streak">الاستمرارية: 0 يوم 🔥</div>
+<p>هيلايتي 😏 نظام ثابت وما ينكسر</p>
 </div><div class="card">
 <div class="big">🎯 الهدف</div>
 <input id="target" type="number" value="100" onchange="saveTarget();calc()">
 </div><div class="card">
 <div class="big" id="days">⏳ الأيام المتبقية: 48</div>
-<div class="msg" id="msg">ابدئي… اللعبة بيدج 😌</div>
+<div class="msg" id="msg">ابدئي… إنتِ تتحكمين 😌</div>
 </div><div class="card">
 <div class="barbg"><div class="bar" id="bar"></div></div>
 <div class="big" id="pct">0%</div>
 <div class="big" id="grade">المعدل: 0</div>
 </div><div class="card">
-<div class="big">👤 ملف الإنجاز</div>
-<div id="xp">XP: 0</div>
+<div class="big">👤 XP</div>
+<div id="xp">0</div>
 <div id="ach"></div>
-</div><div class="grid" id="subjects"></div><button class="reset" onclick="resetAll()">🔄 إعادة اللعبة</button>
+</div><div class="grid" id="subjects"></div><button class="reset" onclick="resetAll()">🔄 إعادة</button>
 
 </div><script>
 const data=[
-{name:"التربية الإسلامية",total:4,enabled:true},
-{name:"اللغة العربية",total:9,enabled:true},
-{name:"الإنكليزي",total:6,enabled:true},
-{name:"الأحياء",total:4,enabled:true},
-{name:"الرياضيات",total:5,enabled:true},
-{name:"الكيمياء",total:7,enabled:true},
-{name:"الفيزياء",total:9,enabled:true}
-];
-
-const messages=[
-"😏 لا توقفين",
-"🔥 المعدل ينتظرج",
-"📚 كل وحدة تقربج",
-"💪 إنتِ قوية",
-"🎮 كملّي الجولة"
+{name:"التربية الإسلامية",total:4},
+{name:"اللغة العربية",total:9},
+{name:"الإنكليزي",total:6},
+{name:"الأحياء",total:4},
+{name:"الرياضيات",total:5},
+{name:"الكيمياء",total:7},
+{name:"الفيزياء",total:9}
 ];
 
 let state=JSON.parse(localStorage.getItem('state')||'{}');
 let enabled=JSON.parse(localStorage.getItem('enabled')||'{}');
-let ach=JSON.parse(localStorage.getItem('ach')||'[]');
 let xp=parseInt(localStorage.getItem('xp')||0);
-let streak=parseInt(localStorage.getItem('streak')||0);
-let lastDay=localStorage.getItem('lastDay');
-let lastActive=parseInt(localStorage.getItem('lastActive')||Date.now());
-let startDate=localStorage.getItem('startDate')||Date.now();
+let ach=JSON.parse(localStorage.getItem('ach')||'[]');
 let target=parseInt(localStorage.getItem('target')||100);
 
-function today(){return new Date().toDateString();}
-
-// streak
-if(lastDay!==today()){
-if(lastDay) streak++;
-localStorage.setItem('lastDay',today());
-localStorage.setItem('streak',streak);
+// 🔊 صوت عند الضغط
+function playSound(){
+const ctx=new (window.AudioContext||window.webkitAudioContext)();
+const o=ctx.createOscillator();
+const g=ctx.createGain();
+o.connect(g);g.connect(ctx.destination);
+o.type='sine';
+o.frequency.value=880;
+g.gain.value=0.08;
+o.start();
+setTimeout(()=>{o.stop();ctx.close();},120);
 }
 
-// XP decay بعد 4 أيام غياب
-function checkInactive(){
-let diffDays=Math.floor((Date.now()-lastActive)/(1000*60*60*24));
-if(diffDays>=4 && xp>0){
-xp=Math.max(0,xp-5);
+function saveAll(){
+localStorage.setItem('state',JSON.stringify(state));
+localStorage.setItem('enabled',JSON.stringify(enabled));
 localStorage.setItem('xp',xp);
-}
-localStorage.setItem('lastActive',Date.now());
-}
-
-function saveTarget(){localStorage.setItem('target',document.getElementById('target').value);}
-
-function addXP(v){xp+=v;localStorage.setItem('xp',xp);checkAch();}
-
-function checkAch(){
-let rewards=["🏅 مبتدئة","🎖 مجتهدة","🏆 قوية","👑 أسطورة"];
-rewards.forEach((r,i)=>{
-if(xp>=(i+1)*10 && !ach.includes(r)) ach.push(r);
-});
 localStorage.setItem('ach',JSON.stringify(ach));
+localStorage.setItem('target',target);
 }
 
-function calcDays(){
-let total=48;
-let passed=Math.floor((Date.now()-startDate)/(1000*60*60*24));
-let left=Math.max(total-passed,0);
-document.getElementById('days').innerText='⏳ الأيام المتبقية: '+left;
-}
+function saveTarget(){
+target=parseInt(document.getElementById('target').value||100);
+saveAll();}
 
-function msg(){
-document.getElementById('msg').innerText=messages[Math.floor(Math.random()*messages.length)];
+function addXP(v){
+xp+=v;
+playSound(); // 🔥 الصوت هنا
+if(xp>=10 && !ach.includes('🏅 بداية قوية')) ach.push('🏅 بداية قوية');
+if(xp>=20 && !ach.includes('🎖 مجتهدة')) ach.push('🎖 مجتهدة');
+if(xp>=40 && !ach.includes('🏆 قوية')) ach.push('🏆 قوية');
+if(xp>=60 && !ach.includes('👑 أسطورة')) ach.push('👑 أسطورة');
+saveAll();
 }
 
 function init(){
-checkInactive();
 document.getElementById('target').value=target;
-
 let html='';
 data.forEach((s,i)=>{
-if(enabled[i]===undefined) enabled[i]=true;
-if(!state[i]) state[i]=0;
+if(state[i]==null) state[i]=0;
+if(enabled[i]==null) enabled[i]=true;
 html+=`<div class='card'>
 <div class='big'>${s.name}</div>
 <div>${state[i]}/${s.total}</div>
@@ -136,35 +109,29 @@ html+=`<div class='card'>
 </div>`;
 });
 document.getElementById('subjects').innerHTML=html;
-calc();
-}
+calc();}
 
 function add(i){
 if(!enabled[i]) return;
-if(state[i]<data[i].total){state[i]++;addXP(1);save();calc();init();}
+if(state[i]<data[i].total){state[i]++;addXP(1);saveAll();init();}
 }
 
-function toggle(i){enabled[i]=!enabled[i];save();calc();init();}
+function toggle(i){enabled[i]=!enabled[i];saveAll();init();}
 
 function calc(){
 let done=0,total=0;
 data.forEach((s,i)=>{if(enabled[i]){done+=state[i];total+=s.total;}});
 let pct=total?(done/total)*100:0;
 let grade=(pct/100)*target;
-let lvl=pct<20?1:pct<40?2:pct<60?3:pct<80?4:pct<95?5:6:6;
-
-document.getElementById('level').innerText='المستوى: '+lvl;
-document.getElementById('xp').innerText='XP: '+xp;
+document.getElementById('xp').innerText=xp;
 document.getElementById('ach').innerHTML=ach.map(a=>`<span class='badge'>${a}</span>`).join('');
 document.getElementById('pct').innerText=pct.toFixed(1)+'%';
 document.getElementById('grade').innerText='المعدل: '+grade.toFixed(1);
 document.getElementById('bar').style.width=pct+'%';
-document.getElementById('streak').innerText='الاستمرارية: '+streak+' يوم 🔥';
 }
 
 function resetAll(){localStorage.clear();location.reload();}
 
-setInterval(()=>{msg();calcDays();},7000);
 init();
 </script></body>
 </html>
